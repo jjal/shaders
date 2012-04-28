@@ -35,18 +35,6 @@ function createCamera()
 	return camera;
 }
 
-
-function createSphere(sphereMaterial)
-{
-	var radius = 50, segments = 16, rings = 16;
-	var sphere = new THREE.Mesh(
-			new THREE.SphereGeometry(radius,
-			segments,
-			rings),
-			sphereMaterial);
-	return sphere;
-}
-
 var light = new THREE.PointLight ( 0xFFFFFF );
 light.position.x = 10;
 light.position.y = 50;
@@ -65,11 +53,6 @@ function main()
 		light.position.y = HEIGHT/2 - window.event.clientY;
 	};
 	
-	var	sphereMaterial = new THREE.MeshLambertMaterial(
-	{
-		color: 0xCC0000
-	});
-	
 	var attributes = {
 		displacement: {
 			type: 'f', // a float
@@ -84,6 +67,7 @@ function main()
 			value: 0
 		}
 	};
+	
 	// create the material and now
 	// include the attributes property
 	var shaderMaterial = new THREE.ShaderMaterial({
@@ -93,16 +77,47 @@ function main()
 		fragmentShader: $('#fragmentshader').text()
 	});
 	
-	var sphere = createSphere(shaderMaterial)
-	
-	// now populate the array of attributes
-	var vertices = sphere.geometry.vertices;
-	var values = attributes.displacement.value
-	for(var v = 0; v < vertices.length; v++) {
-		values.push(Math.random() * 30);
+	// create the particle variables
+	var pMaterial =
+	  new THREE.ParticleBasicMaterial({
+		color: 0xFFFFFF,
+		size: 20,
+		map: THREE.ImageUtils.loadTexture(
+		  "img/particle.png"
+		),
+		blending: THREE.AdditiveBlending,
+		transparent: true
+	  });
+
+	var particleCount = 1800,
+    particles = new THREE.Geometry();
+
+	// now create the individual particles
+	for(var p = 0; p < particleCount; p++) {
+	  // create a particle with random
+	  // position values, -250 -> 250
+	  var pX = Math.random() * 500 - 250,
+		  pY = Math.random() * 500 - 250,
+		  pZ = Math.random() * 500 - 250,
+		  particle = new THREE.Vector3(pX, pY, pZ);
+
+	  // add it to the geometry
+	  particles.vertices.push(particle);
 	}
+
+	// create the particle system
+	var particleSystem =
+	  new THREE.ParticleSystem(
+		particles,
+		pMaterial);
+
+	// also update the particle system to
+	// sort the particles which enables
+	// the behaviour we want
+	particleSystem.sortParticles = true;
 	
-	scene.add(sphere);
+	// add it to the scene
+	scene.add(particleSystem);
 	scene.add(light);	
 	
 	renderLoop();

@@ -13,9 +13,61 @@
   <link rel="stylesheet" href="css/style.css">
 
   <script src="js/libs/modernizr-2.5.3.min.js"></script>
+  		<style>
+			#container {
+				background: #000;
+				width: 400px;
+				height: 300px;
+			}
+		</style>
 </head>
 <body>
   <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
+<script id="vertexshader" type="x-shader/x-vertex">
+uniform float amplitude;
+attribute float displacement;
+varying vec3 vNormal;
+
+void main() {
+
+    vNormal = normal;
+  
+    // push the displacement into the three
+    // slots of a 3D vector so it can be
+    // used in operations with other 3D
+    // vectors like positions and normals
+    vec3 newPosition = position + 
+                       normal * 
+                       vec3(displacement*amplitude);
+
+    gl_Position = projectionMatrix *
+                  modelViewMatrix *
+                  vec4(newPosition,1.0);
+}
+</script>
+<script id="fragmentshader" type="x-shader/x-fragment">
+// same name and type as VS
+varying vec3 vNormal;
+
+void main() {
+
+    // calc the dot product and clamp
+    // 0 -> 1 rather than -1 -> 1
+    vec3 light = vec3(0.5,0.2,1.0);
+      
+    // ensure it's normalized
+    light = normalize(light);
+  
+    // calculate the dot product of
+    // the light to the vertex normal
+    float dProd = max(0.0, dot(vNormal, light));
+  
+    // feed into our frag colour
+    gl_FragColor = vec4(dProd, dProd, dProd, 1.0);
+  
+}
+</script>
+
   <header>
 
   </header>
@@ -32,6 +84,6 @@
   <script src="js/libs/Three.js"></script>
 
   <script src="js/plugins.js"></script>
-  <script src="js/script.js"></script>
+  <script src="js/particles.js"></script>
 </body>
 </html>
