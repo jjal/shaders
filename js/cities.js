@@ -108,13 +108,13 @@ function init()
 	
 	renderer.initMaterial( cubeMaterial, scene.__lights, scene.fog );
 				
-	for ( var i = 0; i < 200; i ++ ) {
+	for ( var i = 0; i < 1000; i ++ ) {
 		var cube = new THREE.Mesh( geometryxy, cubeMaterial );
 
 		cube.scale.y =Math.pow(3,Math.random() * 2 + 1)/4 ;
-		cube.position.x = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 50 + 25;
+		cube.position.x = Math.floor( ( Math.random() * 1000 - 500 ) / 25 ) * 50 + 25;
 		cube.position.y = ( cube.scale.y * 50 ) / 2;
-		cube.position.z = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 50 + 25;
+		cube.position.z = Math.floor( ( Math.random() * 1000 - 500 ) / 25 ) * 50 + 25;
 		//cube.velocity.x = Math.random()*0.1;
 		//planes.push(cube);
 		scene.add(cube);
@@ -141,8 +141,8 @@ function init()
 	  
 	var effectController  = {
 
-		focus: 		1.0,
-		aperture:	0.15,
+		focus: 		0.975,
+		aperture:	0.3,
 		maxblur:	3.0,
 
 	};
@@ -156,8 +156,8 @@ function init()
 	};
 	
 	var gui = new DAT.GUI();
-				gui.add( effectController, "focus", 0.0, 3.0, 0.025 ).onChange( matChanger );
-				gui.add( effectController, "aperture", 0.001, 0.2, 0.001 ).onChange( matChanger );
+				gui.add( effectController, "focus", 0.9, 1.1, 0.001 ).onChange( matChanger );
+				gui.add( effectController, "aperture", 0.001, 0.5, 0.001 ).onChange( matChanger );
 				gui.add( effectController, "maxblur", 0.0, 3.0, 0.025 ).onChange( matChanger );
 				gui.close();
 	
