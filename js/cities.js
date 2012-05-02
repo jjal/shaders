@@ -51,7 +51,7 @@ var camera, scene, renderer,
 				singleMaterial, zmaterial = [],
 				parameters, i, j, k, h, color, x, y, z, s, n, nobjects,
 				material_depth, cubeMaterial;
-
+var isMouseDown;
 var postprocessing = {
 
   enabled  : true
@@ -73,24 +73,19 @@ function init()
 	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 	document.addEventListener( 'touchstart', onDocumentTouchStart, false );
 	document.addEventListener( 'touchmove', onDocumentTouchMove, false );
+	document.addEventListener( 'mousedown', onDocumentMouseDown, false);
+	document.addEventListener( 'mouseup', onDocumentMouseUp, false);
 	
 	camera = createCamera();
 	scene.add(camera);
 	
-	renderer.domElement.onmousemove = function() {
-		light.position.x = window.event.clientX- WIDTH/2;
-		light.position.y = HEIGHT/2 - window.event.clientY;
-	};
-	
 	material_depth = new THREE.MeshDepthMaterial();
-	
-	
 	
 	// Cubes
 	var geometryxy = new THREE.CubeGeometry( 50, 50 , 50);
 	var geometryxy = new THREE.CubeGeometry( 50, 50 , 50);
 	
-	//var cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff, shading: THREE.FlatShading, overdraw: true } );
+	cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff, shading: THREE.FlatShading, overdraw: true } );
 	var path = "img/";
 	var format = '.jpg';
 	var urls = [
@@ -102,7 +97,7 @@ function init()
 	var textureCube = THREE.ImageUtils.loadTextureCube( urls );
 
 	parameters = { color: 0x00ff00, envMap: textureCube, shading: THREE.FlatShading };
-	cubeMaterial = new THREE.MeshBasicMaterial( parameters );
+	//cubeMaterial = new THREE.MeshBasicMaterial( parameters );
 	
 	material_depth = new THREE.MeshDepthMaterial();
 	
@@ -141,7 +136,7 @@ function init()
 	  
 	var effectController  = {
 
-		focus: 		0.975,
+		focus: 		0.985,
 		aperture:	0.3,
 		maxblur:	3.0,
 
@@ -163,9 +158,9 @@ function init()
 	
 	
 	var pointLight = new THREE.PointLight ( 0xFFFFFF );
-pointLight.position.x = 200;
-pointLight.position.y = 100;
-pointLight.position.z = 200;
+	pointLight.position.x = 200;
+	pointLight.position.y = 100;
+	pointLight.position.z = 200;
 	scene.add(pointLight);
 	scene.add(light);	
 	
@@ -178,8 +173,8 @@ function initPostprocessing() {
 
 	postprocessing.scene = new THREE.Scene();
 
-postprocessing.camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2,  window.innerHeight / 2, window.innerHeight / - 2, -10000, 10000 );
-				postprocessing.camera.position.z = 100;
+	postprocessing.camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2,  window.innerHeight / 2, window.innerHeight / - 2, -10000, 10000 );
+	postprocessing.camera.position.z = 100;
 
 	postprocessing.scene.add( postprocessing.camera );
 
@@ -211,18 +206,18 @@ postprocessing.camera = new THREE.OrthographicCamera( window.innerWidth / - 2, w
 
 }
 
-function mouseMoveHandler()
-{ 	
-	light.position.x = window.event.clientX;
-	light.position.y = window.event.clientY;
-}
-
 var frame = 0;
 function renderLoop()
 {	
 	frame += 0.1;
-	camera.position.x += ( mouseX - camera.position.x ) * 0.036;
-	camera.position.y += ( - (mouseY) - camera.position.y ) * 0.036;
+	if(isMouseDown)
+	{
+		camera.position.x += ( mouseX - camera.position.x ) * 0.036;
+		camera.position.y += ( - (mouseY) - camera.position.y ) * 0.036;
+		light.position.x = camera.position.x*-1;
+		light.position.y = camera.position.y;
+		light.position.z = camera.position.z*-1;
+	};
 	camera.lookAt( scene.position );	
 	requestAnimFrame(renderLoop);
 	var camPos = camera.position;
@@ -250,15 +245,26 @@ function renderLoop()
 	}
 
 }
-			
+		
+		
+function onDocumentMouseDown( event ) {
+	isMouseDown=true;
+}
+		
+function onDocumentMouseUp( event ) {
+	isMouseDown = false;
+}		
 function onDocumentTouchMove( event ) {
 
 	if ( event.touches.length == 1 ) {
 
 		event.preventDefault();
+		if(isMouseDown)
+		{
 
 		mouseX = event.touches[ 0 ].pageX - windowHalfX;
 		mouseY = event.touches[ 0 ].pageY - windowHalfY;
+		}
 
 	}
 }
