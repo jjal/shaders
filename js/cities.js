@@ -148,10 +148,12 @@ function init()
 				gui.add( effectController, "maxblur", 0.0, 3.0, 0.025 ).onChange( matChanger );
 				gui.close();
 	
+	
+	
 	scene.add(light);	
 	
 	camera.lookAt( scene.position );
-	
+	matChanger(); //init
 	renderLoop();
 }
 
