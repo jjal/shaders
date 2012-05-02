@@ -89,7 +89,20 @@ function init()
 	// Cubes
 	var geometryxy = new THREE.CubeGeometry( 50, 50 , 50);
 	var geometryxy = new THREE.CubeGeometry( 50, 50 , 50);
-	var cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff, shading: THREE.FlatShading, overdraw: true } );
+	
+	//var cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff, shading: THREE.FlatShading, overdraw: true } );
+	var path = "img/";
+	var format = '.jpg';
+	var urls = [
+			path + 'px' + format, path + 'nx' + format,
+			path + 'py' + format, path + 'ny' + format,
+			path + 'pz' + format, path + 'nz' + format
+		];
+
+	var textureCube = THREE.ImageUtils.loadTextureCube( urls );
+
+	parameters = { color: 0x00ff00, envMap: textureCube, shading: THREE.FlatShading };
+	cubeMaterial = new THREE.MeshBasicMaterial( parameters );
 	
 	material_depth = new THREE.MeshDepthMaterial();
 	
@@ -117,7 +130,7 @@ function init()
 	
 	// Lights
 
-	var ambientLight = new THREE.AmbientLight( Math.random() * 0x10 );
+	var ambientLight = new THREE.AmbientLight( 1.0);//Math.random() * 0xf0 );
 	scene.add( ambientLight );
 	
 	scene.matrixAutoUpdate = false;
@@ -149,7 +162,11 @@ function init()
 				gui.close();
 	
 	
-	
+	var pointLight = new THREE.PointLight ( 0xFFFFFF );
+pointLight.position.x = 200;
+pointLight.position.y = 100;
+pointLight.position.z = 200;
+	scene.add(pointLight);
 	scene.add(light);	
 	
 	camera.lookAt( scene.position );
