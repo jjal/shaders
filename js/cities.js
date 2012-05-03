@@ -85,7 +85,7 @@ function init()
 	var geometryxy = new THREE.CubeGeometry( 50, 50 , 50);
 	var geometryxy = new THREE.CubeGeometry( 50, 50 , 50);
 	
-	cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff, shading: THREE.FlatShading, overdraw: true } );
+	cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff, shading: THREE.FlatShading, overdraw: true, shininess: 20 } );
 	var path = "img/";
 	var format = '.jpg';
 	var urls = [
@@ -103,9 +103,9 @@ function init()
 	
 	renderer.initMaterial( cubeMaterial, scene.__lights, scene.fog );
 				
-	for ( var i = 0; i < 4000; i ++ ) {
+	for ( var i = 0; i < 3000; i ++ ) {
 		var cube = new THREE.Mesh( geometryxy, cubeMaterial );
-
+		
 		cube.scale.y =Math.pow(3,Math.random() * 2 + 1)/4 ;
 		cube.position.x = Math.floor( ( Math.random() * 1000 - 500 ) / 10 ) * 50 + 25;
 		cube.position.y = ( cube.scale.y * 50 ) / 2;
@@ -114,6 +114,12 @@ function init()
 		//planes.push(cube);
 		scene.add(cube);
 	}
+	geometryxy = new THREE.CubeGeometry( 4000, 4000 , 4000);
+	var room = new THREE.Mesh( geometryxy, cubeMaterial );
+	room.doubleSided = true;
+	room.position.x =  room.position.z = 0;
+	room.position.y = 2000;
+	scene.add(room);
 
 	for ( var i = 0; i < 100; i ++ ) {
 		//planes[i].rotation.x = 90;
@@ -212,8 +218,8 @@ function renderLoop()
 	frame += 0.1;
 	if(isMouseDown)
 	{
-		camera.position.x += ( mouseX - camera.position.x ) * 0.36;
-		camera.position.y += ( - (mouseY) - camera.position.y ) * 0.36;
+		camera.position.x += ( mouseX+1000 - camera.position.x ) * 0.036;
+		camera.position.y += ( - (mouseY)+1000 - camera.position.y ) * 0.036;
 		light.position.x = camera.position.x*-1;
 		light.position.y = camera.position.y;
 		light.position.z = camera.position.z*-1;
