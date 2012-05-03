@@ -13,7 +13,7 @@ var WIDTH = window.innerWidth,
 	HEIGHT = window.innerHeight;
 var height = HEIGHT;
 var width = WIDTH;
-var VIEW_ANGLE = 50,
+var VIEW_ANGLE = 80,
 	ASPECT = WIDTH/HEIGHT,
 	NEAR = .1,
 	FAR = 10000;	
@@ -35,9 +35,9 @@ function createCamera()
 					 FAR
 				 );
 				 
-	camera.position.x = 400;
-	camera.position.y = 1000;
-	camera.position.z = 400;
+	camera.position.x = 800;
+	camera.position.y = 2000;
+	camera.position.z = 800;
 	return camera;
 }
 
@@ -103,13 +103,13 @@ function init()
 	
 	renderer.initMaterial( cubeMaterial, scene.__lights, scene.fog );
 				
-	for ( var i = 0; i < 1000; i ++ ) {
+	for ( var i = 0; i < 4000; i ++ ) {
 		var cube = new THREE.Mesh( geometryxy, cubeMaterial );
 
 		cube.scale.y =Math.pow(3,Math.random() * 2 + 1)/4 ;
-		cube.position.x = Math.floor( ( Math.random() * 1000 - 500 ) / 25 ) * 50 + 25;
+		cube.position.x = Math.floor( ( Math.random() * 1000 - 500 ) / 10 ) * 50 + 25;
 		cube.position.y = ( cube.scale.y * 50 ) / 2;
-		cube.position.z = Math.floor( ( Math.random() * 1000 - 500 ) / 25 ) * 50 + 25;
+		cube.position.z = Math.floor( ( Math.random() * 1000 - 500 ) / 10 ) * 50 + 25;
 		//cube.velocity.x = Math.random()*0.1;
 		//planes.push(cube);
 		scene.add(cube);
@@ -212,8 +212,8 @@ function renderLoop()
 	frame += 0.1;
 	if(isMouseDown)
 	{
-		camera.position.x += ( mouseX - camera.position.x ) * 0.036;
-		camera.position.y += ( - (mouseY) - camera.position.y ) * 0.036;
+		camera.position.x += ( mouseX - camera.position.x ) * 0.36;
+		camera.position.y += ( - (mouseY) - camera.position.y ) * 0.36;
 		light.position.x = camera.position.x*-1;
 		light.position.y = camera.position.y;
 		light.position.z = camera.position.z*-1;
