@@ -35,16 +35,16 @@ function createCamera()
 					 FAR
 				 );
 				 
-	camera.position.x = 300;
-	camera.position.y = 600;
-	camera.position.z = 200;
+	camera.position.x = 1600;
+	camera.position.y = 1200;
+	camera.position.z = 1200;
 	return camera;
 }
 
 var light = new THREE.PointLight ( 0xFFFFFF );
-light.position.x =-600;
+light.position.x =-900;
 light.position.y = 3000;
-light.position.z = -300;
+light.position.z = -900;
 
 var camera, scene, renderer,
 				materials = [], objects = [],
@@ -124,18 +124,18 @@ function init()
 			
 		if(dir != 0)
 		{
-			cube.scale.x =Math.pow(3,Math.random() * 2 + 1)/4 ;
-			cube.position.y = (Math.pow(4,Math.random() * 2+ 1)/4  *25 ) / 2;
+			cube.scale.x =Math.pow(3,Math.random() * 4 + 1) / 4;
+			cube.position.y = (Math.pow(4,Math.random() * 4+ 1) / 4  *25 ) / 2;
 		}
 		if(dir != 1)
 		{
-			cube.scale.y =Math.pow(3,Math.random() * 3+ 1)/4 ;
+			cube.scale.y =Math.pow(3,Math.random() * 4+ 1) / 4;
 			cube.position.y = ( cube.scale.y *25 ) / 2;
 		}
 		if(dir != 2)
 		{
-			cube.scale.z =Math.pow(3,Math.random() * 2 + 1)/4 ;
-			cube.position.y = ( Math.pow(4,Math.random() * 3+ 1)/4  *25 ) / 2;
+			cube.scale.z =Math.pow(3,Math.random() * 4 + 1) / 4;
+			cube.position.y = ( Math.pow(4,Math.random() * 3+ 1) / 4  *25 ) / 2;
 		}
 		
 		var rot = Math.random()*10;
@@ -144,9 +144,9 @@ function init()
 			cube.rotation.y = 90* deg2rad;
 		}
 		
-		cube.position.x = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 30 + 25;
+		cube.position.x = Math.floor( ( Math.random() * 4000 - 500 ) / 50 ) * 30 + 25;
 		//cube.position.y = ( cube.scale.y *25 ) / 2;
-		cube.position.z = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 30 + 25;
+		cube.position.z = Math.floor( ( Math.random() * 4000 - 500 ) / 50 ) * 30 + 25;
 		
 		scene.add(cube);
 	}
@@ -170,8 +170,8 @@ function init()
 	  
 	var effectController  = {
 
-		focus: 		0.992,
-		aperture:	0.402,
+		focus: 		0.955,
+		aperture:	0.202,
 		maxblur:	3.0,
 
 	};
