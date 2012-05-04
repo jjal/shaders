@@ -8,7 +8,7 @@ window.requestAnimFrame = (function(){
             window.setTimeout(callback, 1000 / 60);
           };
 })();
-
+var deg2rad = Math.PI / 180.0;
 var WIDTH = window.innerWidth,
 	HEIGHT = window.innerHeight;
 var height = HEIGHT;
@@ -35,16 +35,16 @@ function createCamera()
 					 FAR
 				 );
 				 
-	camera.position.x = 800;
-	camera.position.y = 2000;
-	camera.position.z = 800;
+	camera.position.x = 300;
+	camera.position.y = 600;
+	camera.position.z = 200;
 	return camera;
 }
 
 var light = new THREE.PointLight ( 0xFFFFFF );
-light.position.x = 200;
-light.position.y = 100;
-light.position.z = 200;
+light.position.x =-600;
+light.position.y = 3000;
+light.position.z = -300;
 
 var camera, scene, renderer,
 				materials = [], objects = [],
@@ -82,10 +82,12 @@ function init()
 	material_depth = new THREE.MeshDepthMaterial();
 	
 	// Cubes
-	var geometryxy = new THREE.CubeGeometry( 50, 50 , 50);
-	var geometryxy = new THREE.CubeGeometry( 50, 50 , 50);
+	var geometryxy = new THREE.CubeGeometry( 5, 5 , 5);
 	
-	cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff, shading: THREE.FlatShading, overdraw: true, shininess: 20 } );
+	cubeMaterialw = new THREE.MeshPhongMaterial( { color: 0xffffff,ambient:0xffffff, specular: 0xffffaa, shininess: 30 } );
+	cubeMaterialb = new THREE.MeshPhongMaterial( { color: 0x111111, ambient:0xffffff, specular: 0xffffaa, shininess: 30} );
+	cubeMaterialo = new THREE.MeshPhongMaterial( { color: 0xff3300, ambient:0xffffff, specular: 0xffffaa, shininess: 30 } );
+	
 	var path = "img/";
 	var format = '.jpg';
 	var urls = [
@@ -96,43 +98,69 @@ function init()
 
 	var textureCube = THREE.ImageUtils.loadTextureCube( urls );
 
-	parameters = { color: 0x00ff00, envMap: textureCube, shading: THREE.FlatShading };
-	//cubeMaterial = new THREE.MeshBasicMaterial( parameters );
+	parameters = { color: 0x888800, envMap: textureCube, shading: THREE.FlatShading,ambient:0xffffff, specular: 0xffffaa, shininess: 30 };
+	cubeMaterialm = new THREE.MeshBasicMaterial( parameters );
 	
 	material_depth = new THREE.MeshDepthMaterial();
 	
-	renderer.initMaterial( cubeMaterial, scene.__lights, scene.fog );
+	renderer.initMaterial( cubeMaterialw, scene.__lights, scene.fog );
+	renderer.initMaterial( cubeMaterialb, scene.__lights, scene.fog );
+	renderer.initMaterial( cubeMaterialo, scene.__lights, scene.fog );
 				
-	for ( var i = 0; i < 3000; i ++ ) {
-		var cube = new THREE.Mesh( geometryxy, cubeMaterial );
+	for ( var i = 0; i < 6000; i ++ ) {
+		var dir = Math.floor(Math.random()*3);
 		
-		cube.scale.y =Math.pow(3,Math.random() * 2 + 1)/4 ;
-		cube.position.x = Math.floor( ( Math.random() * 1000 - 500 ) / 10 ) * 50 + 25;
-		cube.position.y = ( cube.scale.y * 50 ) / 2;
-		cube.position.z = Math.floor( ( Math.random() * 1000 - 500 ) / 10 ) * 50 + 25;
-		//cube.velocity.x = Math.random()*0.1;
-		//planes.push(cube);
+		var cube;
+		var color = Math.floor(Math.random()*4);
+		
+		if(color == 0)
+			cube = new THREE.Mesh( geometryxy, cubeMaterialw );
+		if(color == 1)
+			cube = new THREE.Mesh( geometryxy, cubeMaterialo );
+		if(color == 2)
+			cube = new THREE.Mesh( geometryxy, cubeMaterialb );
+		if(color == 3)
+			cube = new THREE.Mesh( geometryxy, cubeMaterialm );
+			
+		if(dir != 0)
+		{
+			cube.scale.x =Math.pow(3,Math.random() * 2 + 1)/4 ;
+			cube.position.y = (Math.pow(4,Math.random() * 2+ 1)/4  *25 ) / 2;
+		}
+		if(dir != 1)
+		{
+			cube.scale.y =Math.pow(3,Math.random() * 3+ 1)/4 ;
+			cube.position.y = ( cube.scale.y *25 ) / 2;
+		}
+		if(dir != 2)
+		{
+			cube.scale.z =Math.pow(3,Math.random() * 2 + 1)/4 ;
+			cube.position.y = ( Math.pow(4,Math.random() * 3+ 1)/4  *25 ) / 2;
+		}
+		
+		var rot = Math.random()*10;
+		if(rot < 3)
+		{
+			cube.rotation.y = 90* deg2rad;
+		}
+		
+		cube.position.x = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 30 + 25;
+		//cube.position.y = ( cube.scale.y *25 ) / 2;
+		cube.position.z = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 30 + 25;
+		
 		scene.add(cube);
 	}
-	geometryxy = new THREE.CubeGeometry( 4000, 4000 , 4000);
+	geometryxy = new THREE.CubeGeometry( 2000, 2000 , 2000);
 	var room = new THREE.Mesh( geometryxy, cubeMaterial );
 	room.doubleSided = true;
 	room.position.x =  room.position.z = 0;
 	room.position.y = 2000;
-	scene.add(room);
+	//scene.add(room);
 
-	for ( var i = 0; i < 100; i ++ ) {
-		//planes[i].rotation.x = 90;
-	}
-	for ( var i = 100; i < 200; i ++ ) {
-		//planes[i].rotation.y = 90;
-		//planes[i].rotation.x = 90;
-	}
-	
 	// Lights
 
-	var ambientLight = new THREE.AmbientLight( 1.0);//Math.random() * 0xf0 );
-	scene.add( ambientLight );
+	var ambientLight = new THREE.AmbientLight( Math.random() * 0xff );
+	//scene.add( ambientLight );
 	
 	scene.matrixAutoUpdate = false;
 
@@ -142,8 +170,8 @@ function init()
 	  
 	var effectController  = {
 
-		focus: 		0.985,
-		aperture:	0.3,
+		focus: 		0.992,
+		aperture:	0.402,
 		maxblur:	3.0,
 
 	};
@@ -157,22 +185,32 @@ function init()
 	};
 	
 	var gui = new DAT.GUI();
-				gui.add( effectController, "focus", 0.9, 1.1, 0.001 ).onChange( matChanger );
-				gui.add( effectController, "aperture", 0.001, 0.5, 0.001 ).onChange( matChanger );
-				gui.add( effectController, "maxblur", 0.0, 3.0, 0.025 ).onChange( matChanger );
-				gui.close();
+	gui.add( effectController, "focus", 0.9, 1.1, 0.001 ).onChange( matChanger );
+	gui.add( effectController, "aperture", 0.001, 0.5, 0.001 ).onChange( matChanger );
+	gui.add( effectController, "maxblur", 0.0, 3.0, 0.025 ).onChange( matChanger );
+	gui.close();
 	
 	
 	var pointLight = new THREE.PointLight ( 0xFFFFFF );
-	pointLight.position.x = 200;
-	pointLight.position.y = 100;
-	pointLight.position.z = 200;
+	pointLight.position.x = -400;
+	pointLight.position.y = 1000;
+	pointLight.position.z = -400;
 	scene.add(pointLight);
 	scene.add(light);	
 	
 	camera.lookAt( scene.position );
 	matChanger(); //init
 	renderLoop();
+}
+
+// Rotate an object around an axis in object space
+function rotateAroundObjectAxis( object, axis, radians ) {
+
+    var rotationMatrix = new THREE.Matrix4();
+
+    rotationMatrix.setRotationAxis( axis.normalize(), radians );
+    object.matrix.multiplySelf( rotationMatrix );                       // post-multiply
+    object.rotation.setRotationFromMatrix( object.matrix );
 }
 
 function initPostprocessing() {
@@ -218,8 +256,8 @@ function renderLoop()
 	frame += 0.1;
 	if(isMouseDown)
 	{
-		camera.position.x += ( mouseX+1000 - camera.position.x ) * 0.036;
-		camera.position.y += ( - (mouseY)+1000 - camera.position.y ) * 0.036;
+		camera.position.x += ( mouseX+800 - camera.position.x ) * 0.036;
+		camera.position.y += ( - (mouseY)+800 - camera.position.y ) * 0.036;
 		light.position.x = camera.position.x*-1;
 		light.position.y = camera.position.y;
 		light.position.z = camera.position.z*-1;
