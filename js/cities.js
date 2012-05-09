@@ -58,6 +58,7 @@ var postprocessing = {
 
 };
 
+var particleSystem;
 var particleCount = 1800,
     particles = new THREE.Geometry();
 
@@ -164,6 +165,55 @@ function init()
 	
 	scene.matrixAutoUpdate = false;
 
+	//particle stuff
+	
+	// create the particle variables
+	var pMaterial =
+	  new THREE.ParticleBasicMaterial({
+		color: 0xFFFFFF,
+		size: 10,
+		map: THREE.ImageUtils.loadTexture(
+		  "img/particle.png"
+		),
+		blending: THREE.AdditiveBlending,
+		transparent: true
+	  });
+
+	
+
+	// now create the individual particles
+	for(var p = 0; p < particleCount; p++) {
+	  // create a particle with random
+	  // position values, -250 -> 250
+		var pX = Math.floor( ( Math.random() * 4000 - 500 ) / 50 ) * 30 + 25;
+		var pY = Math.floor( ( Math.random() * 4000 - 500 ) / 50 ) * 30 + 25;
+		var pZ = Math.floor( ( Math.random() * 4000 - 500 ) / 50 ) * 30 + 25;
+		particle = new THREE.Vector3(pX, pY, pZ);
+		  // create a velocity vector
+		particle.velocity = new THREE.Vector3(
+		  0,              // x
+		  Math.random(), // y: random vel
+		  0);             // z
+
+	  // add it to the geometry
+	  particles.vertices.push(particle);
+	}
+
+	// create the particle system
+	particleSystem =
+	  new THREE.ParticleSystem(
+		particles,
+		pMaterial);
+
+	// also update the particle system to
+	// sort the particles which enables
+	// the behaviour we want
+	particleSystem.sortParticles = true;
+	
+	// add it to the scene
+	scene.add(particleSystem);
+	//end particle stuff
+
 	initPostprocessing();
 
 	renderer.autoClear = false;
@@ -265,6 +315,37 @@ function renderLoop()
 	camera.lookAt( scene.position );	
 	requestAnimFrame(renderLoop);
 	var camPos = camera.position;
+	
+	var pCount = particleCount;
+	while(pCount--) {
+
+	// get the particle
+	var particle =
+	  particles.vertices[pCount];
+
+	// check if we need to reset
+	if(particle.y < (-1*HEIGHT) || particle.y > HEIGHT) {
+	  particle.y = 0;
+	  particle.velocity.y = Math.random();
+	}
+
+	// update the velocity with
+	// a splat of randomniz
+	particle.velocity.y +=
+	  Math.random() * .1-0.05;
+
+	// and the position
+	particle.addSelf(
+	  particle.velocity);
+	}
+
+	// flag to the particle system
+	// that we've changed its vertices.
+	particleSystem.
+		geometry.
+		__dirtyVertices = true;
+	
+	frame += 0.1;
 	
 	
 				
