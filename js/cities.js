@@ -18,12 +18,17 @@ var VIEW_ANGLE = 80,
 	NEAR = .1,
 	FAR = 10000;	
 var mouseX = 0, mouseY = 0;
+var shaderSettings = {
+				rings: 3,
+				samples: 4
+			};
 
-			var windowHalfX = window.innerWidth / 2;
-			var windowHalfY = window.innerHeight / 2;
+
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
 var renderer;
 
-var scene = new THREE.Scene();		
+var scene;
 
 function createCamera()
 {
@@ -64,12 +69,14 @@ var particleCount = 1800,
 
 function init()
 {
-	renderer = new THREE.WebGLRenderer( { antialias: false } );
+  scene = new THREE.Scene();
+	
+  renderer = new THREE.WebGLRenderer( { antialias: false } );
 	renderer.sortObjects = false;
 	renderer.setSize(WIDTH,HEIGHT);
 
-	var $container = $('#main');
-	$container.append(renderer.domElement);	
+	var container = $('#main').get(0);
+	container.appendChild( renderer.domElement );
 	
 	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 	document.addEventListener( 'touchstart', onDocumentTouchStart, false );
@@ -182,7 +189,103 @@ function init()
 	
 
 	// now create the individual particles
-	for(var p = 0; p < particleCount; p++) {
+	//createParticles();
+	
+	initPostprocessing();
+  
+
+	renderer.autoClear = false;
+	  
+	var effectController  = {
+
+		enabled: true,
+    jsDepthCalculation: true,
+    shaderFocus: false,
+
+    fstop: 2.2,
+    maxblur: 1.0,
+
+    showFocus: false,
+    focalDepth: 2.8,
+    manualdof: false,
+    vignetting: false,
+    depthblur: false,
+
+    threshold: 0.5,
+    gain: 2.0,
+    bias: 0.5,
+    fringe: 0.7,
+
+    focalLength: 35,
+    noise: true,
+    pentagon: false,
+
+    dithering: 0.0001
+
+
+	};
+
+	var matChanger = function( ) {
+    for (var e in effectController) {
+      if (e in postprocessing.bokeh_uniforms)
+      postprocessing.bokeh_uniforms[ e ].value = effectController[ e ];
+    }
+	};
+	
+	var gui = new dat.GUI();
+	gui.add( effectController, "enabled" ).onChange( matChanger );
+  gui.add( effectController, "jsDepthCalculation" ).onChange( matChanger );
+  gui.add( effectController, "shaderFocus" ).onChange( matChanger );
+  gui.add( effectController, "focalDepth", 0.0, 200.0 ).listen().onChange( matChanger );
+
+  gui.add( effectController, "fstop", 0.1, 22, 0.001 ).onChange( matChanger );
+  gui.add( effectController, "maxblur", 0.0, 5.0, 0.025 ).onChange( matChanger );
+
+  gui.add( effectController, "showFocus" ).onChange( matChanger );
+  gui.add( effectController, "manualdof" ).onChange( matChanger );
+  gui.add( effectController, "vignetting" ).onChange( matChanger );
+
+  gui.add( effectController, "depthblur" ).onChange( matChanger );
+
+  gui.add( effectController, "threshold", 0, 1, 0.001 ).onChange( matChanger );
+  gui.add( effectController, "gain", 0, 100, 0.001 ).onChange( matChanger );
+  gui.add( effectController, "bias", 0,3, 0.001 ).onChange( matChanger );
+  gui.add( effectController, "fringe", 0, 5, 0.001 ).onChange( matChanger );
+
+  gui.add( effectController, "focalLength", 16, 80, 0.001 ).onChange( matChanger )
+
+  gui.add( effectController, "noise" ).onChange( matChanger );
+
+  gui.add( effectController, "dithering", 0, 0.001, 0.0001 ).onChange( matChanger );
+
+  gui.add( effectController, "pentagon" ).onChange( matChanger );
+
+  gui.add( shaderSettings, "rings", 1, 8).step(1).onChange( shaderUpdate );
+  gui.add( shaderSettings, "samples", 1, 13).step(1).onChange( shaderUpdate );	
+	
+	var pointLight = new THREE.PointLight ( 0xFFFFFF );
+	pointLight.position.x = -400;
+	pointLight.position.y = 1000;
+	pointLight.position.z = -400;
+	scene.add(pointLight);
+	scene.add(light);	
+	
+	camera.lookAt( scene.position );
+	matChanger(); //init
+	renderLoop();
+}
+
+function shaderUpdate() {
+  postprocessing.materialBokeh.defines.RINGS = shaderSettings.rings;
+  postprocessing.materialBokeh.defines.SAMPLES = shaderSettings.samples;
+
+  postprocessing.materialBokeh.needsUpdate = true;
+
+}
+
+function createParticles()
+{
+  for(var p = 0; p < particleCount; p++) {
 	  // create a particle with random
 	  // position values, -250 -> 250
 		var pX = Math.floor( ( Math.random() * 4000 - 500 ) / 50 ) * 30 + 25;
@@ -212,46 +315,8 @@ function init()
 	
 	// add it to the scene
 	scene.add(particleSystem);
-	//end particle stuff
-
-	initPostprocessing();
-
-	renderer.autoClear = false;
-	  
-	var effectController  = {
-
-		focus: 		0.955,
-		aperture:	0.202,
-		maxblur:	3.0,
-
-	};
-
-	var matChanger = function( ) {
-
-		postprocessing.bokeh_uniforms[ "focus" ].value = effectController.focus;
-		postprocessing.bokeh_uniforms[ "aperture" ].value = effectController.aperture;
-		postprocessing.bokeh_uniforms[ "maxblur" ].value = effectController.maxblur;
-
-	};
-	
-	var gui = new DAT.GUI();
-	gui.add( effectController, "focus", 0.9, 1.1, 0.001 ).onChange( matChanger );
-	gui.add( effectController, "aperture", 0.001, 0.5, 0.001 ).onChange( matChanger );
-	gui.add( effectController, "maxblur", 0.0, 3.0, 0.025 ).onChange( matChanger );
-	gui.close();
-	
-	
-	var pointLight = new THREE.PointLight ( 0xFFFFFF );
-	pointLight.position.x = -400;
-	pointLight.position.y = 1000;
-	pointLight.position.z = -400;
-	scene.add(pointLight);
-	scene.add(light);	
-	
-	camera.lookAt( scene.position );
-	matChanger(); //init
-	renderLoop();
 }
+
 
 // Rotate an object around an axis in object space
 function rotateAroundObjectAxis( object, axis, radians ) {
@@ -267,37 +332,40 @@ function initPostprocessing() {
 
 	postprocessing.scene = new THREE.Scene();
 
-	postprocessing.camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2,  window.innerHeight / 2, window.innerHeight / - 2, -10000, 10000 );
-	postprocessing.camera.position.z = 100;
+  postprocessing.camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2,  window.innerHeight / 2, window.innerHeight / - 2, -10000, 10000 );
+  postprocessing.camera.position.z = 100;
 
-	postprocessing.scene.add( postprocessing.camera );
+  postprocessing.scene.add( postprocessing.camera );
 
-	var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat };
-	postprocessing.rtTextureDepth = new THREE.WebGLRenderTarget( window.innerWidth, height, pars );
-	postprocessing.rtTextureColor = new THREE.WebGLRenderTarget( window.innerWidth, height, pars );
+  var pars = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat };
+  postprocessing.rtTextureDepth = new THREE.WebGLRenderTarget( window.innerWidth, height, pars );
+  postprocessing.rtTextureColor = new THREE.WebGLRenderTarget( window.innerWidth, height, pars );
 
-	var bokeh_shader = THREE.ShaderExtras[ "bokeh" ];
+  var bokeh_shader = THREE.BokehShader;
 
-	postprocessing.bokeh_uniforms = THREE.UniformsUtils.clone( bokeh_shader.uniforms );
+  postprocessing.bokeh_uniforms = THREE.UniformsUtils.clone( bokeh_shader.uniforms );
 
-	postprocessing.bokeh_uniforms[ "tColor" ].texture = postprocessing.rtTextureColor;
-	postprocessing.bokeh_uniforms[ "tDepth" ].texture = postprocessing.rtTextureDepth;
-	postprocessing.bokeh_uniforms[ "focus" ].value = 1.1;
-	postprocessing.bokeh_uniforms[ "aspect" ].value = window.innerWidth / height;
+  postprocessing.bokeh_uniforms[ "tColor" ].value = postprocessing.rtTextureColor;
+  postprocessing.bokeh_uniforms[ "tDepth" ].value = postprocessing.rtTextureDepth;
 
-	postprocessing.materialBokeh = new THREE.ShaderMaterial( {
+  postprocessing.bokeh_uniforms[ "textureWidth" ].value = window.innerWidth;
 
-		uniforms: postprocessing.bokeh_uniforms,
-		vertexShader: bokeh_shader.vertexShader,
-		fragmentShader: bokeh_shader.fragmentShader
+  postprocessing.bokeh_uniforms[ "textureHeight" ].value = height;
 
-	} );
+  postprocessing.materialBokeh = new THREE.ShaderMaterial( {
 
-	postprocessing.quad = new THREE.Mesh( new THREE.PlaneGeometry( window.innerWidth, window.innerHeight ), postprocessing.materialBokeh );
-	postprocessing.quad.position.z = 1000;
-	postprocessing.quad.rotation.x = Math.PI / 2;
-	postprocessing.scene.add( postprocessing.quad );
+    uniforms: postprocessing.bokeh_uniforms,
+    vertexShader: bokeh_shader.vertexShader,
+    fragmentShader: bokeh_shader.fragmentShader,
+    defines: {
+      RINGS: shaderSettings.rings,
+      SAMPLES: shaderSettings.samples
+    }
+  } );
 
+  postprocessing.quad = new THREE.Mesh( new THREE.PlaneGeometry( window.innerWidth, window.innerHeight ), postprocessing.materialBokeh );
+  postprocessing.quad.position.z = - 500;
+  postprocessing.scene.add( postprocessing.quad );
 }
 
 var frame = 0;
@@ -316,27 +384,56 @@ function renderLoop()
 	requestAnimFrame(renderLoop);
 	var camPos = camera.position;
 	
-	var pCount = particleCount;
+	//updateParticles();
+  
+	frame += 0.1;
+	
+  if ( postprocessing.enabled ) {
+    renderer.clear();
+
+    // Render scene into texture
+    scene.overrideMaterial = null;
+    renderer.render( scene, camera, postprocessing.rtTextureColor, true );
+
+    // Render depth into texture
+    scene.overrideMaterial = material_depth;
+    renderer.render( scene, camera, postprocessing.rtTextureDepth, true );
+
+    // Render bokeh composite
+    renderer.render( postprocessing.scene, postprocessing.camera );
+    
+  } else {
+    scene.overrideMaterial = null;
+
+    renderer.clear();
+    renderer.render( scene, camera );
+  }
+
+}
+
+function updateParticles ()
+{
+  var pCount = particleCount;
 	while(pCount--) {
 
-	// get the particle
-	var particle =
-	  particles.vertices[pCount];
+    // get the particle
+    var particle =
+      particles.vertices[pCount];
 
-	// check if we need to reset
-	if(particle.y < (-1*HEIGHT) || particle.y > HEIGHT) {
-	  particle.y = 0;
-	  particle.velocity.y = Math.random();
-	}
+    // check if we need to reset
+    if(particle.y < (-1*HEIGHT) || particle.y > HEIGHT) {
+      particle.y = 0;
+      particle.velocity.y = Math.random();
+    }
 
-	// update the velocity with
-	// a splat of randomniz
-	particle.velocity.y +=
-	  Math.random() * .1-0.05;
+    // update the velocity with
+    // a splat of randomniz
+    particle.velocity.y +=
+      Math.random() * .1-0.05;
 
-	// and the position
-	particle.addSelf(
-	  particle.velocity);
+    // and the position
+    //particle.addSelf(
+      //particle.velocity);
 	}
 
 	// flag to the particle system
@@ -345,30 +442,6 @@ function renderLoop()
 		geometry.
 		__dirtyVertices = true;
 	
-	frame += 0.1;
-	
-	
-				
-	if ( postprocessing.enabled ) {
-//camera.position.divideSelf(2);// = camPos - (camPos.normalize()*100);
-		renderer.clear();
-
-		// Render scene into texture
-		scene.overrideMaterial = null;
-		renderer.render( scene, camera, postprocessing.rtTextureColor, true );
-
-		// Render depth into texture
-		scene.overrideMaterial = material_depth;
-		renderer.render( scene, camera, postprocessing.rtTextureDepth, true );
-	
-		// Render bokeh composite
-		renderer.render( postprocessing.scene, postprocessing.camera );
-		//camera.position.multiplySelf(2);
-	} else {
-		renderer.clear();
-		renderer.render( scene, camera );
-	}
-
 }
 		
 		
